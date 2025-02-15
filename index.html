@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gorilla Tag Menu Library</title>
+    <link rel="icon" href="https://d-menu-data.vercel.app/icon.png" type="image/png">
+    <style>
+        @font-face {
+            font-family: 'CodecCold';
+            src: url('Codec-Cold-ExtraBold-trial.ttf') format('truetype');
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: rgb(32, 31, 42);
+            color: white;
+            font-family: 'CodecCold', sans-serif;
+            position: relative;
+            overflow: hidden;
+        }
+
+        h1 {
+            font-size: 64px;
+            text-shadow: 0 0 20px violet;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .button {
+            padding: 15px 50px;
+            font-size: 24px;
+            background: linear-gradient(135deg, #6a5acd, #a66ae3);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            cursor: pointer;
+            transition: background 0.3s ease-in-out, transform 0.2s;
+            font-family: 'CodecCold', sans-serif;
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .button:hover {
+            background: linear-gradient(135deg, #7b67f1, #b080e7);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .button:disabled {
+            background-color: #cccccc;
+            color: #666666;
+            border: 1px solid #999999;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .footer {
+            position: fixed;
+            bottom: 10px;
+            left: 10px;
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        #rexon-modal, #shiba-modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.8);
+            background-color: rgb(64, 58, 117);
+            padding: 20px;
+            border-radius: 12px;
+            z-index: 10;
+            text-align: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.4s ease, transform 0.4s ease, visibility 0.4s;
+        }
+
+        #rexon-modal.show, #shiba-modal.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translate(-50%, -50%) scale(1);
+        }
+    </style>
+</head>
+<body>
+    <h1>Gorilla Tag Menu Library</h1>
+    <div class="buttons">
+        <button class="button" onclick="window.location.href='https://www.dmenu.me/IIMenu/'">IIMenu</button>
+        <button class="button" id="rexonButton">Rexon</button>
+        <button class="button" onclick="window.location.href='https://www.dmenu.me/Download/'">DMenu</button>
+        <button class="button" disabled>Displyy</button>
+        <button class="button" disabled>Steal</button>
+        <button class="button" id="shibaButton">Shiba Genesis</button>
+    </div>
+
+    <div class="footer">
+        Powered by: <a href="https://github.com/DavuksDev/DMenuWEB" target="_blank">DProd, GitHub</a><br>
+        Made By: Davuks
+    </div>
+
+    <div id="rexon-modal">
+        <h2>Rexon Options</h2>
+        <button class="button" disabled>Download Paid DLL</button>
+        <button class="button" onclick="window.location.href='https://discord.gg/rexon'">Whitelist</button>
+        <button class="button" onclick="window.location.href='https://cdn.discordapp.com/attachments/1218949773374001152/1315114855732346890/RexonFREE.dll'">Download Rexon Free</button>
+        <button class="button" id="closeRexon">Close</button>
+    </div>
+
+    <div id="shiba-modal">
+        <h2>This DLL Have autoupdate!</h2>
+        <button class="button" onclick="window.location.href='https://github.com/DavuksDev/DMenu-Data/raw/refs/heads/main/DMENUACTUALLY.dll'">Download DLL</button>
+        <button class="button" id="closeShiba">Close</button>
+    </div>
+
+    <script>
+        document.getElementById('rexonButton').addEventListener('click', function() {
+            document.getElementById('rexon-modal').classList.add('show');
+        });
+
+        document.getElementById('closeRexon').addEventListener('click', function() {
+            document.getElementById('rexon-modal').classList.remove('show');
+        });
+
+        document.getElementById('shibaButton').addEventListener('click', function() {
+            document.getElementById('shiba-modal').classList.add('show');
+        });
+
+        document.getElementById('closeShiba').addEventListener('click', function() {
+            document.getElementById('shiba-modal').classList.remove('show');
+        });
+    </script>
+</body>
+</html>
