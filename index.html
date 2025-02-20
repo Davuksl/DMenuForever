@@ -82,12 +82,56 @@
             display: none;
             margin-top: 20px;
         }
+
+        .settings-button {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            padding: 10px 20px;
+            font-size: 18px;
+            background: linear-gradient(135deg, #6a5acd, #a66ae3);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            cursor: pointer;
+            transition: background 0.3s ease-in-out, transform 0.2s;
+            font-family: 'CodecCold', sans-serif;
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .settings-button:hover {
+            background: linear-gradient(135deg, #7b67f1, #b080e7);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .discord-button {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            padding: 10px 20px;
+            font-size: 18px;
+            background: linear-gradient(135deg, #6a5acd, #a66ae3);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            cursor: pointer;
+            transition: background 0.3s ease-in-out, transform 0.2s;
+            font-family: 'CodecCold', sans-serif;
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .discord-button:hover {
+            background: linear-gradient(135deg, #7b67f1, #b080e7);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 20px rgba(0, 0, 0, 0.4);
+        }
     </style>
 </head>
 <body>
+    <button class="settings-button" id="settingsButton">⚙️</button>
     <h1>Gorilla Tag Menu Library</h1>
     <div class="buttons">
-        <button class="button" id="settingsButton">Settings</button>
         <button class="button" onclick="window.location.href='https://www.dmenu.me/IIMenu/'">IIMenu</button>
         <button class="button" id="rexonButton">Rexon</button>
         <button class="button" onclick="window.location.href='https://www.dmenu.me/Download/'">DMenu</button>
