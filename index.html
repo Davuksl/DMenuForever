@@ -73,6 +73,24 @@
             color: rgba(255, 255, 255, 0.7);
         }
 
+        .discord-button {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            padding: 10px 20px;
+            font-size: 18px;
+            background: #5865F2;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .discord-button:hover {
+            background: #4752C4;
+        }
+
         #rexon-modal, #shiba-modal {
             position: fixed;
             top: 50%;
@@ -110,6 +128,8 @@
         Powered by: <a href="https://github.com/DavuksDev/DMenuWEB" target="_blank">DProd, Davuks</a><br>
         Made By: Davuks
     </div>
+
+    <button class="discord-button" onclick="window.location.href='https://www.dmenu.me/Rush'">DISCORD</button>
 
     <div id="rexon-modal">
         <h2>Rexon Options</h2>
