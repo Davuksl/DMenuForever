@@ -57,41 +57,7 @@
             box-shadow: 0 12px 20px rgba(0, 0, 0, 0.4);
         }
 
-        .button:disabled {
-            background-color: #cccccc;
-            color: #666666;
-            border: 1px solid #999999;
-            cursor: not-allowed;
-            box-shadow: none;
-        }
-
-        .footer {
-            position: fixed;
-            bottom: 10px;
-            left: 10px;
-            font-size: 14px;
-            color: rgba(255, 255, 255, 0.7);
-        }
-
-        .discord-button {
-            position: fixed;
-            bottom: 10px;
-            right: 10px;
-            padding: 10px 20px;
-            font-size: 18px;
-            background: #5865F2;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-
-        .discord-button:hover {
-            background: #4752C4;
-        }
-
-        #rexon-modal, #shiba-modal {
+        .settings-panel {
             position: fixed;
             top: 50%;
             left: 50%;
@@ -106,16 +72,22 @@
             transition: opacity 0.4s ease, transform 0.4s ease, visibility 0.4s;
         }
 
-        #rexon-modal.show, #shiba-modal.show {
+        .settings-panel.show {
             opacity: 1;
             visibility: visible;
             transform: translate(-50%, -50%) scale(1);
+        }
+
+        .discord-widget {
+            display: none;
+            margin-top: 20px;
         }
     </style>
 </head>
 <body>
     <h1>Gorilla Tag Menu Library</h1>
     <div class="buttons">
+        <button class="button" id="settingsButton">Settings</button>
         <button class="button" onclick="window.location.href='https://www.dmenu.me/IIMenu/'">IIMenu</button>
         <button class="button" id="rexonButton">Rexon</button>
         <button class="button" onclick="window.location.href='https://www.dmenu.me/Download/'">DMenu</button>
@@ -131,36 +103,42 @@
 
     <button class="discord-button" onclick="window.location.href='https://www.dmenu.me/Rush'">DISCORD</button>
 
-    <div id="rexon-modal">
-        <h2>Rexon Options</h2>
-        <button class="button" disabled>Download Paid DLL</button>
-        <button class="button" onclick="window.location.href='https://discord.gg/rexon'">Whitelist</button>
-        <button class="button" onclick="window.location.href='https://cdn.discordapp.com/attachments/1218949773374001152/1315114855732346890/RexonFREE.dll'">Download Rexon Free</button>
-        <button class="button" id="closeRexon">Close</button>
-    </div>
-
-    <div id="shiba-modal">
-        <h2>This DLL Have autoupdate!</h2>
-        <button class="button" onclick="window.location.href='https://github.com/DMenuForever/DMenuForever/raw/refs/heads/main/DMENUACTUALLY.dll'">Download DLL</button>
-        <button class="button" id="closeShiba">Close</button>
+    <div class="settings-panel" id="settingsPanel">
+        <h2>Settings</h2>
+        <button class="button" id="toggleDiscord">Enable Discord Widget</button>
+        <button class="button" id="closeSettings">Close</button>
+        <div class="discord-widget" id="discordWidget">
+            <iframe src="https://discord.com/widget?id=1190318037715398718&theme=dark" width="350" height="500" allowtransparency="true" frameborder="0" sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"></iframe>
+        </div>
     </div>
 
     <script>
-        document.getElementById('rexonButton').addEventListener('click', function() {
-            document.getElementById('rexon-modal').classList.add('show');
+        document.getElementById('settingsButton').addEventListener('click', function() {
+            document.getElementById('settingsPanel').classList.add('show');
         });
 
-        document.getElementById('closeRexon').addEventListener('click', function() {
-            document.getElementById('rexon-modal').classList.remove('show');
+        document.getElementById('closeSettings').addEventListener('click', function() {
+            document.getElementById('settingsPanel').classList.remove('show');
         });
 
-        document.getElementById('shibaButton').addEventListener('click', function() {
-            document.getElementById('shiba-modal').classList.add('show');
+        document.getElementById('toggleDiscord').addEventListener('click', function() {
+            let widget = document.getElementById('discordWidget');
+            let isEnabled = widget.style.display === 'block';
+            widget.style.display = isEnabled ? 'none' : 'block';
+            document.cookie = `discordWidget=${!isEnabled}; path=/; max-age=31536000`;
         });
 
-        document.getElementById('closeShiba').addEventListener('click', function() {
-            document.getElementById('shiba-modal').classList.remove('show');
-        });
+        window.onload = function() {
+            let cookies = document.cookie.split('; ').reduce((acc, cookie) => {
+                let [name, value] = cookie.split('=');
+                acc[name] = value;
+                return acc;
+            }, {});
+            
+            if (cookies.discordWidget === 'true') {
+                document.getElementById('discordWidget').style.display = 'block';
+            }
+        };
     </script>
 </body>
 </html>
