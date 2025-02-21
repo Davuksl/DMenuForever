@@ -83,6 +83,27 @@
             visibility: visible;
             transform: translate(-50%, -50%) scale(1);
         }
+
+        .modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.8);
+            background-color: rgb(64, 58, 117);
+            padding: 20px;
+            border-radius: 12px;
+            z-index: 10;
+            text-align: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.4s ease, transform 0.4s ease, visibility 0.4s;
+        }
+
+        .modal.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translate(-50%, -50%) scale(1);
+        }
     </style>
 </head>
 <body>
@@ -104,42 +125,36 @@
 
     <button class="button" onclick="window.location.href='https://www.dmenu.me/Rush'" style="position: fixed; bottom: 10px; right: 10px;">DISCORD</button>
 
-    <div class="settings-panel" id="settingsPanel">
-        <h2>Settings</h2>
-        <button class="button" id="toggleDiscord">Enable Discord Widget</button>
-        <button class="button" id="closeSettings">Close</button>
-        <div class="discord-widget" id="discordWidget" style="display: none;">
-            <iframe src="https://discord.com/widget?id=1190318037715398718&theme=dark" width="350" height="500" allowtransparency="true" frameborder="0" sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"></iframe>
-        </div>
+    <div class="modal" id="rexon-modal">
+        <h2>Rexon Options</h2>
+        <button class="button" disabled>Download Paid DLL</button>
+        <button class="button" onclick="window.location.href='https://discord.gg/rexon'">Whitelist</button>
+        <button class="button" onclick="window.location.href='https://cdn.discordapp.com/attachments/1218949773374001152/1315114855732346890/RexonFREE.dll'">Download Rexon Free</button>
+        <button class="button" id="closeRexon">Close</button>
+    </div>
+
+    <div class="modal" id="shiba-modal">
+        <h2>This DLL Have autoupdate!</h2>
+        <button class="button" onclick="window.location.href='https://github.com/DMenuForever/DMenuForever/raw/refs/heads/main/DMENUACTUALLY.dll'">Download DLL</button>
+        <button class="button" id="closeShiba">Close</button>
     </div>
 
     <script>
-        document.getElementById('settingsButton').addEventListener('click', function() {
-            document.getElementById('settingsPanel').classList.add('show');
+        document.getElementById('rexonButton').addEventListener('click', function() {
+            document.getElementById('rexon-modal').classList.add('show');
         });
 
-        document.getElementById('closeSettings').addEventListener('click', function() {
-            document.getElementById('settingsPanel').classList.remove('show');
+        document.getElementById('closeRexon').addEventListener('click', function() {
+            document.getElementById('rexon-modal').classList.remove('show');
         });
 
-        document.getElementById('toggleDiscord').addEventListener('click', function() {
-            let widget = document.getElementById('discordWidget');
-            let isEnabled = widget.style.display === 'block';
-            widget.style.display = isEnabled ? 'none' : 'block';
-            document.cookie = `discordWidget=${!isEnabled}; path=/; max-age=31536000`;
+        document.getElementById('shibaButton').addEventListener('click', function() {
+            document.getElementById('shiba-modal').classList.add('show');
         });
 
-        window.onload = function() {
-            let cookies = document.cookie.split('; ').reduce((acc, cookie) => {
-                let [name, value] = cookie.split('=');
-                acc[name] = value;
-                return acc;
-            }, {});
-            
-            if (cookies.discordWidget === 'true') {
-                document.getElementById('discordWidget').style.display = 'block';
-            }
-        };
+        document.getElementById('closeShiba').addEventListener('click', function() {
+            document.getElementById('shiba-modal').classList.remove('show');
+        });
     </script>
 </body>
 </html>
