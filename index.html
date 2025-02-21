@@ -51,7 +51,13 @@
             box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
         }
 
-        .button:hover {
+        .button:disabled {
+            background: gray;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .button:hover:not(:disabled) {
             background: linear-gradient(135deg, #7b67f1, #b080e7);
             transform: translateY(-4px);
             box-shadow: 0 12px 20px rgba(0, 0, 0, 0.4);
@@ -77,59 +83,10 @@
             visibility: visible;
             transform: translate(-50%, -50%) scale(1);
         }
-
-        .discord-widget {
-            display: none;
-            margin-top: 20px;
-        }
-
-        .settings-button {
-            position: fixed;
-            top: 10px;
-            left: 10px;
-            padding: 10px 20px;
-            font-size: 18px;
-            background: linear-gradient(135deg, #6a5acd, #a66ae3);
-            border: none;
-            border-radius: 12px;
-            color: white;
-            cursor: pointer;
-            transition: background 0.3s ease-in-out, transform 0.2s;
-            font-family: 'CodecCold', sans-serif;
-            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
-        }
-
-        .settings-button:hover {
-            background: linear-gradient(135deg, #7b67f1, #b080e7);
-            transform: translateY(-4px);
-            box-shadow: 0 12px 20px rgba(0, 0, 0, 0.4);
-        }
-
-        .discord-button {
-            position: fixed;
-            bottom: 10px;
-            right: 10px;
-            padding: 10px 20px;
-            font-size: 18px;
-            background: linear-gradient(135deg, #6a5acd, #a66ae3);
-            border: none;
-            border-radius: 12px;
-            color: white;
-            cursor: pointer;
-            transition: background 0.3s ease-in-out, transform 0.2s;
-            font-family: 'CodecCold', sans-serif;
-            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
-        }
-
-        .discord-button:hover {
-            background: linear-gradient(135deg, #7b67f1, #b080e7);
-            transform: translateY(-4px);
-            box-shadow: 0 12px 20px rgba(0, 0, 0, 0.4);
-        }
     </style>
 </head>
 <body>
-    <button class="settings-button" id="settingsButton">⚙️</button>
+    <button class="button" id="settingsButton" style="position: fixed; top: 10px; left: 10px;">⚙️</button>
     <h1>Gorilla Tag Menu Library</h1>
     <div class="buttons">
         <button class="button" onclick="window.location.href='https://www.dmenu.me/IIMenu/'">IIMenu</button>
@@ -145,13 +102,13 @@
         Made By: Davuks
     </div>
 
-    <button class="discord-button" onclick="window.location.href='https://www.dmenu.me/Rush'">DISCORD</button>
+    <button class="button" onclick="window.location.href='https://www.dmenu.me/Rush'" style="position: fixed; bottom: 10px; right: 10px;">DISCORD</button>
 
     <div class="settings-panel" id="settingsPanel">
         <h2>Settings</h2>
         <button class="button" id="toggleDiscord">Enable Discord Widget</button>
         <button class="button" id="closeSettings">Close</button>
-        <div class="discord-widget" id="discordWidget">
+        <div class="discord-widget" id="discordWidget" style="display: none;">
             <iframe src="https://discord.com/widget?id=1190318037715398718&theme=dark" width="350" height="500" allowtransparency="true" frameborder="0" sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"></iframe>
         </div>
     </div>
