@@ -63,27 +63,6 @@
             box-shadow: 0 12px 20px rgba(0, 0, 0, 0.4);
         }
 
-        .settings-panel {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%) scale(0.8);
-            background-color: rgb(64, 58, 117);
-            padding: 20px;
-            border-radius: 12px;
-            z-index: 10;
-            text-align: center;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.4s ease, transform 0.4s ease, visibility 0.4s;
-        }
-
-        .settings-panel.show {
-            opacity: 1;
-            visibility: visible;
-            transform: translate(-50%, -50%) scale(1);
-        }
-
         .modal {
             position: fixed;
             top: 50%;
@@ -104,11 +83,34 @@
             visibility: visible;
             transform: translate(-50%, -50%) scale(1);
         }
+
+        .settings-panel {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.8);
+            background-color: rgb(64, 58, 117);
+            padding: 20px;
+            border-radius: 12px;
+            z-index: 10;
+            text-align: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.4s ease, transform 0.4s ease, visibility 0.4s;
+        }
+
+        .settings-panel.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translate(-50%, -50%) scale(1);
+        }
     </style>
 </head>
 <body>
     <button class="button" id="settingsButton" style="position: fixed; top: 10px; left: 10px;">⚙️</button>
+    
     <h1>Gorilla Tag Menu Library</h1>
+    
     <div class="buttons">
         <button class="button" onclick="window.location.href='https://www.dmenu.me/IIMenu/'">IIMenu</button>
         <button class="button" id="rexonButton">Rexon</button>
@@ -118,12 +120,10 @@
         <button class="button" id="shibaButton">Shiba Genesis</button>
     </div>
 
-    <div class="footer">
-        Powered by: <a href="https://github.com/DavuksDev/DMenuWEB" target="_blank">DProd, Davuks</a><br>
-        Made By: Davuks
+    <div class="settings-panel" id="settingsPanel">
+        <h2>Settings</h2>
+        <button class="button" id="closeSettings">Close</button>
     </div>
-
-    <button class="button" onclick="window.location.href='https://www.dmenu.me/Rush'" style="position: fixed; bottom: 10px; right: 10px;">DISCORD</button>
 
     <div class="modal" id="rexon-modal">
         <h2>Rexon Options</h2>
@@ -134,12 +134,20 @@
     </div>
 
     <div class="modal" id="shiba-modal">
-        <h2>This DLL Have autoupdate!</h2>
+        <h2>This DLL Has Auto-update!</h2>
         <button class="button" onclick="window.location.href='https://github.com/DMenuForever/DMenuForever/raw/refs/heads/main/DMENUACTUALLY.dll'">Download DLL</button>
         <button class="button" id="closeShiba">Close</button>
     </div>
-
+    
     <script>
+        document.getElementById('settingsButton').addEventListener('click', function() {
+            document.getElementById('settingsPanel').classList.toggle('show');
+        });
+
+        document.getElementById('closeSettings').addEventListener('click', function() {
+            document.getElementById('settingsPanel').classList.remove('show');
+        });
+
         document.getElementById('rexonButton').addEventListener('click', function() {
             document.getElementById('rexon-modal').classList.add('show');
         });
