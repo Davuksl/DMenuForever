@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Servers Down</title>
+    <meta name="description" content="DMenu">
+    <meta name="keywords" content="GorillaTag, Gorilla Tag, DMenu, Davuks, DMenuGT">
+    <meta name="author" content="Davuks">
+    <style>
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(45deg, #3A007D, #6A1B9A);
+            overflow: hidden;
+            position: relative;
+            flex-direction: column;
+            font-family: Arial, sans-serif;
+        }
+        .cube {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            border: 2px solid cyan;
+            box-shadow: 0 0 10px cyan;
+        }
+        h1, h2, h3 {
+            font-size: 4rem;
+            font-weight: bold;
+            color: #FFFFFF;
+            text-shadow: 0 0 15px #FFFFFF, 0 0 30px #AAAAFF;
+            font-family: 'Codec Cold', Arial, sans-serif;
+            animation: glow 1.5s infinite alternate;
+            position: relative;
+            z-index: 2;
+            user-select: none;
+        }
+        h2 {
+            font-size: 2.5rem;
+            margin-top: 20px;
+        }
+        h3 {
+            font-size: 2.5rem;
+            margin-top: 10px;
+        }
+        #console {
+            position: absolute;
+            bottom: 10%;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0, 0, 0, 0.7);
+            color: #00FF00;
+            font-family: 'Courier New', Courier, monospace;
+            padding: 10px;
+            border-radius: 5px;
+            display: none;
+            width: 80%;
+            max-width: 500px;
+        }
+        @keyframes glow {
+            from {
+                text-shadow: 0 0 15px #FFFFFF, 0 0 30px #AAAAFF;
+            }
+            to {
+                text-shadow: 0 0 25px #FFFFFF, 0 0 50px #AAAAFF;
+            }
+        }
+        @font-face {
+            font-family: 'Codec Cold';
+            src: url('fonts/Codec-Cold-Bold-trial.ttf') format('truetype');
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>SERVERS ARE DOWN</h1>
+    <h2>PLEASE TRY AGAIN LATER</h2>
+    <h2>Another Axiom Suck my dick you didn't do anything i just wanna sleep</h2>
+    <div id="console"></div>
+    <script>
+        let numCubes = 5;
+        let cubes = [];
+        let consoleVisible = false;
+        const consoleElement = document.getElementById("console");
+
+        function createCubes(count) {
+            cubes.forEach(cube => cube.remove());
+            cubes = [];
+            for (let i = 0; i < count; i++) {
+                let cube = document.createElement("div");
+                cube.classList.add("cube");
+                document.body.appendChild(cube);
+                cube.style.top = Math.random() * (window.innerHeight - 50) + "px";
+                cube.style.left = Math.random() * (window.innerWidth - 50) + "px";
+                cube.dataset.dx = (Math.random() > 0.5 ? 1 : -1) * (2 + Math.random() * 3);
+                cube.dataset.dy = (Math.random() > 0.5 ? 1 : -1) * (2 + Math.random() * 3);
+                cubes.push(cube);
+            }
+        }
+
+        function handleConsoleInput(input) {
+            if (input.startsWith("cube_count ")) {
+                const count = parseInt(input.split(" ")[1]);
+                if (!isNaN(count)) {
+                    numCubes = count;
+                    createCubes(numCubes);
+                }
+            } else if (input === "cube_count_slider") {
+                createSlider();
+            }
+        }
+
+        function createSlider() {
+            const slider = document.createElement("input");
+            slider.type = "range";
+            slider.min = 1;
+            slider.max = 100;
+            slider.value = numCubes;
+            slider.style.width = "100%";
+            slider.style.marginTop = "10px";
+            slider.addEventListener("input", () => {
+                numCubes = slider.value;
+                createCubes(numCubes);
+            });
+
+            consoleElement.appendChild(slider);
+        }
+
+        window.addEventListener("keydown", (e) => {
+            if (e.key === "`") {
+                consoleVisible = !consoleVisible;
+                consoleElement.style.display = consoleVisible ? "block" : "none";
+                if (consoleVisible) {
+                    consoleElement.innerHTML = "<input type='text' id='consoleInput' placeholder='Type command...'>";
+                    const inputField = document.getElementById("consoleInput");
+                    inputField.focus();
+                    inputField.addEventListener("keydown", (e) => {
+                        if (e.key === "Enter") {
+                            const input = inputField.value;
+                            handleConsoleInput(input);
+                            inputField.value = "";
+                        }
+                    });
+                }
+            }
+        });
+
+        createCubes(numCubes);
+
+        function animate() {
+            cubes.forEach(cube => {
+                let x = parseFloat(cube.style.left);
+                let y = parseFloat(cube.style.top);
+                let dx = parseFloat(cube.dataset.dx);
+                let dy = parseFloat(cube.dataset.dy);
+                if (x + dx < 0 || x + dx > window.innerWidth - 50) cube.dataset.dx = -dx;
+                if (y + dy < 0 || y + dy > window.innerHeight - 50) cube.dataset.dy = -dy;
+                cube.style.left = x + parseFloat(cube.dataset.dx) + "px";
+                cube.style.top = y + parseFloat(cube.dataset.dy) + "px";
+            });
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+    </script>
+</body>
+</html>

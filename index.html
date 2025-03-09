@@ -3,168 +3,166 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Servers Down</title>
-    <meta name="description" content="DMenu">
-    <meta name="keywords" content="GorillaTag, Gorilla Tag, DMenu, Davuks, DMenuGT">
-    <meta name="author" content="Davuks">
+    <title>Gorilla Tag Menu Library</title>
+    <link rel="icon" href="https://d-menu-data.vercel.app/icon.png" type="image/png">
     <style>
+        @font-face {
+            font-family: 'CodecCold';
+            src: url('Codec-Cold-ExtraBold-trial.ttf') format('truetype');
+        }
+
         body {
-            margin: 0;
-            height: 100vh;
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
-            background: linear-gradient(45deg, #3A007D, #6A1B9A);
+            height: 100vh;
+            margin: 0;
+            background-color: rgb(32, 31, 42);
+            color: white;
+            font-family: 'CodecCold', sans-serif;
+            position: relative;
             overflow: hidden;
-            position: relative;
+        }
+
+        h1 {
+            font-size: 64px;
+            text-shadow: 0 0 20px violet;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .buttons {
+            display: flex;
             flex-direction: column;
-            font-family: Arial, sans-serif;
+            gap: 15px;
         }
-        .cube {
-            position: absolute;
-            width: 50px;
-            height: 50px;
-            border: 2px solid cyan;
-            box-shadow: 0 0 10px cyan;
+
+        .button {
+            padding: 15px 50px;
+            font-size: 24px;
+            background: linear-gradient(135deg, #6a5acd, #a66ae3);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            cursor: pointer;
+            transition: background 0.3s ease-in-out, transform 0.2s;
+            font-family: 'CodecCold', sans-serif;
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
         }
-        h1, h2, h3 {
-            font-size: 4rem;
-            font-weight: bold;
-            color: #FFFFFF;
-            text-shadow: 0 0 15px #FFFFFF, 0 0 30px #AAAAFF;
-            font-family: 'Codec Cold', Arial, sans-serif;
-            animation: glow 1.5s infinite alternate;
-            position: relative;
-            z-index: 2;
-            user-select: none;
+
+        .button:disabled {
+            background: gray;
+            cursor: not-allowed;
+            box-shadow: none;
         }
-        h2 {
-            font-size: 2.5rem;
-            margin-top: 20px;
+
+        .button:hover:not(:disabled) {
+            background: linear-gradient(135deg, #7b67f1, #b080e7);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 20px rgba(0, 0, 0, 0.4);
         }
-        h3 {
-            font-size: 2.5rem;
-            margin-top: 10px;
-        }
-        #console {
-            position: absolute;
-            bottom: 10%;
+
+        .modal {
+            position: fixed;
+            top: 50%;
             left: 50%;
-            transform: translateX(-50%);
-            background-color: rgba(0, 0, 0, 0.7);
-            color: #00FF00;
-            font-family: 'Courier New', Courier, monospace;
-            padding: 10px;
-            border-radius: 5px;
-            display: none;
-            width: 80%;
-            max-width: 500px;
+            transform: translate(-50%, -50%) scale(0.8);
+            background-color: rgb(64, 58, 117);
+            padding: 20px;
+            border-radius: 12px;
+            z-index: 10;
+            text-align: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.4s ease, transform 0.4s ease, visibility 0.4s;
         }
-        @keyframes glow {
-            from {
-                text-shadow: 0 0 15px #FFFFFF, 0 0 30px #AAAAFF;
-            }
-            to {
-                text-shadow: 0 0 25px #FFFFFF, 0 0 50px #AAAAFF;
-            }
+
+        .modal.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translate(-50%, -50%) scale(1);
         }
-        @font-face {
-            font-family: 'Codec Cold';
-            src: url('fonts/Codec-Cold-Bold-trial.ttf') format('truetype');
-            font-weight: bold;
+
+        .settings-panel {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.8);
+            background-color: rgb(64, 58, 117);
+            padding: 20px;
+            border-radius: 12px;
+            z-index: 10;
+            text-align: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.4s ease, transform 0.4s ease, visibility 0.4s;
+        }
+
+        .settings-panel.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translate(-50%, -50%) scale(1);
         }
     </style>
 </head>
 <body>
-    <h1>SERVERS ARE DOWN</h1>
-    <h2>PLEASE TRY AGAIN LATER</h2>
-    <h2>Another Axiom Suck my dick you didn't do anything i just wanna sleep</h2>
-    <div id="console"></div>
+    <button class="button" id="settingsButton" style="position: fixed; top: 10px; left: 10px;">⚙️</button>
+    
+    <h1>Gorilla Tag Menu Library</h1>
+    
+    <div class="buttons">
+        <button class="button" onclick="window.location.href='https://www.dmenu.me/IIMenu/'">IIMenu</button>
+        <button class="button" id="rexonButton">Rexon</button>
+        <button class="button" onclick="window.location.href='https://www.dmenu.me/Download/'">DMenu</button>
+        <button class="button" disabled>Displyy</button>
+        <button class="button" disabled>Steal</button>
+        <button class="button" id="shibaButton">Shiba Genesis</button>
+    </div>
+
+    <div class="settings-panel" id="settingsPanel">
+        <h2>Settings</h2>
+        <button class="button" id="closeSettings">Close</button>
+    </div>
+
+    <div class="modal" id="rexon-modal">
+        <h2>Rexon Options</h2>
+        <button class="button" disabled>Download Paid DLL</button>
+        <button class="button" onclick="window.location.href='https://discord.gg/rexon'">Whitelist</button>
+        <button class="button" onclick="window.location.href='https://cdn.discordapp.com/attachments/1218949773374001152/1315114855732346890/RexonFREE.dll'">Download Rexon Free</button>
+        <button class="button" id="closeRexon">Close</button>
+    </div>
+
+    <div class="modal" id="shiba-modal">
+        <h2>This DLL Has Auto-update!</h2>
+        <button class="button" onclick="window.location.href='https://github.com/DMenuForever/DMenuForever/raw/refs/heads/main/DMENUACTUALLY.dll'">Download DLL</button>
+        <button class="button" id="closeShiba">Close</button>
+    </div>
+    
     <script>
-        let numCubes = 5;
-        let cubes = [];
-        let consoleVisible = false;
-        const consoleElement = document.getElementById("console");
-
-        function createCubes(count) {
-            cubes.forEach(cube => cube.remove());
-            cubes = [];
-            for (let i = 0; i < count; i++) {
-                let cube = document.createElement("div");
-                cube.classList.add("cube");
-                document.body.appendChild(cube);
-                cube.style.top = Math.random() * (window.innerHeight - 50) + "px";
-                cube.style.left = Math.random() * (window.innerWidth - 50) + "px";
-                cube.dataset.dx = (Math.random() > 0.5 ? 1 : -1) * (2 + Math.random() * 3);
-                cube.dataset.dy = (Math.random() > 0.5 ? 1 : -1) * (2 + Math.random() * 3);
-                cubes.push(cube);
-            }
-        }
-
-        function handleConsoleInput(input) {
-            if (input.startsWith("cube_count ")) {
-                const count = parseInt(input.split(" ")[1]);
-                if (!isNaN(count)) {
-                    numCubes = count;
-                    createCubes(numCubes);
-                }
-            } else if (input === "cube_count_slider") {
-                createSlider();
-            }
-        }
-
-        function createSlider() {
-            const slider = document.createElement("input");
-            slider.type = "range";
-            slider.min = 1;
-            slider.max = 100;
-            slider.value = numCubes;
-            slider.style.width = "100%";
-            slider.style.marginTop = "10px";
-            slider.addEventListener("input", () => {
-                numCubes = slider.value;
-                createCubes(numCubes);
-            });
-
-            consoleElement.appendChild(slider);
-        }
-
-        window.addEventListener("keydown", (e) => {
-            if (e.key === "`") {
-                consoleVisible = !consoleVisible;
-                consoleElement.style.display = consoleVisible ? "block" : "none";
-                if (consoleVisible) {
-                    consoleElement.innerHTML = "<input type='text' id='consoleInput' placeholder='Type command...'>";
-                    const inputField = document.getElementById("consoleInput");
-                    inputField.focus();
-                    inputField.addEventListener("keydown", (e) => {
-                        if (e.key === "Enter") {
-                            const input = inputField.value;
-                            handleConsoleInput(input);
-                            inputField.value = "";
-                        }
-                    });
-                }
-            }
+        document.getElementById('settingsButton').addEventListener('click', function() {
+            document.getElementById('settingsPanel').classList.toggle('show');
         });
 
-        createCubes(numCubes);
+        document.getElementById('closeSettings').addEventListener('click', function() {
+            document.getElementById('settingsPanel').classList.remove('show');
+        });
 
-        function animate() {
-            cubes.forEach(cube => {
-                let x = parseFloat(cube.style.left);
-                let y = parseFloat(cube.style.top);
-                let dx = parseFloat(cube.dataset.dx);
-                let dy = parseFloat(cube.dataset.dy);
-                if (x + dx < 0 || x + dx > window.innerWidth - 50) cube.dataset.dx = -dx;
-                if (y + dy < 0 || y + dy > window.innerHeight - 50) cube.dataset.dy = -dy;
-                cube.style.left = x + parseFloat(cube.dataset.dx) + "px";
-                cube.style.top = y + parseFloat(cube.dataset.dy) + "px";
-            });
-            requestAnimationFrame(animate);
-        }
+        document.getElementById('rexonButton').addEventListener('click', function() {
+            document.getElementById('rexon-modal').classList.add('show');
+        });
 
-        animate();
+        document.getElementById('closeRexon').addEventListener('click', function() {
+            document.getElementById('rexon-modal').classList.remove('show');
+        });
+
+        document.getElementById('shibaButton').addEventListener('click', function() {
+            document.getElementById('shiba-modal').classList.add('show');
+        });
+
+        document.getElementById('closeShiba').addEventListener('click', function() {
+            document.getElementById('shiba-modal').classList.remove('show');
+        });
     </script>
 </body>
 </html>
