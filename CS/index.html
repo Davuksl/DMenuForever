@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSGO Fixer</title>
+    <style>
+        @font-face {
+            font-family: 'Codec-Cold-Bold';
+            src: url('Codec-Cold-Bold-trial.ttf') format('truetype');
+        }
+        body {
+            background: linear-gradient(-45deg, #4b0082, #8a2be2, #ff00ff, #6a0dad);
+            background-size: 300% 300%;
+            animation: gradientMove 8s infinite alternate ease-in-out;
+            color: white;
+            font-family: 'Codec-Cold-Bold', Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        @keyframes gradientMove {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 50% 100%;
+            }
+        }
+        .container {
+            text-align: center;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+        .btn {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 15px 30px;
+            font-size: 18px;
+            color: white;
+            background: #a64dff;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: 0.3s ease;
+            margin: 10px;
+            font-family: 'Codec-Cold-Bold', Arial, sans-serif;
+        }
+        .btn:hover {
+            background: #9258d4;
+            transform: translateY(-3px);
+        }
+    </style>
+    <script>
+        function copyToClipboard() {
+            const text = `ClientVersion=2000499\nServerVersion=2000499\nPatchVersion=1.38.8.1\nProductName=csgo\nappID=730\nSourceRevision=8413246\nVersionDate=Oct 12 2023\nVersionTime=09:57:39`;
+            navigator.clipboard.writeText(text).then(() => {
+                alert("Copied!");
+            });
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>CSGO Fixer</h1>
+        <a class="btn" href="data:text/plain;charset=utf-8,ClientVersion=2000499%0AServerVersion=2000499%0APatchVersion=1.38.8.1%0AProductName=csgo%0AappID=730%0ASourceRevision=8413246%0AVersionDate=Oct%2012%202023%0AVersionTime=09:57:39" download="steam.inf">Download steam.inf</a>
+        <button class="btn" onclick="copyToClipboard()">Copy steam.inf</button>
+    </div>
+</body>
+</html>
