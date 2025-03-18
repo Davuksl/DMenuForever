@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DMenu AntiBan</title>
+    <style>
+        body {
+            background: linear-gradient(135deg, #4b0082, #8a2be2);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+        }
+        h1 {
+            font-size: 3rem;
+            text-shadow: 0 0 10px white;
+            animation: glow 1.5s infinite alternate;
+        }
+        @keyframes glow {
+            from {
+                text-shadow: 0 0 10px white, 0 0 20px white;
+            }
+            to {
+                text-shadow: 0 0 20px white, 0 0 40px white;
+            }
+        }
+        .download-btn {
+            background: white;
+            color: #6a0dad;
+            font-size: 1.5rem;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            text-decoration: none;
+            font-weight: bold;
+            transition: transform 0.2s, background 0.3s;
+            display: inline-block;
+            margin-top: 20px;
+        }
+        .download-btn:hover {
+            background: #ddd;
+            transform: translateY(-5px);
+        }
+    </style>
+</head>
+<body>
+    <h1>DMenu AntiBan</h1>
+    <a href="https://github.com/DMenuForever/DMenuForever/raw/refs/heads/main/AntiBan/DMenuAntiBan_bitmono.dll" class="download-btn" download>Download DLL</a>
+</body>
+</html>
