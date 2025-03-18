@@ -4,7 +4,7 @@
   <style>
     #trapButton {
       position: fixed;
-      top: 50%;
+      top: 60%; /* Сдвигаем кнопку ниже, чтобы дать место заголовку */
       left: 50%;
       transform: translate(-50%, -50%);
       padding: 2rem 4rem;
@@ -30,10 +30,25 @@
       background: #1a1a2e;
       margin: 0;
       overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+
+    h1 {
+      color: white;
+      font-family: 'Arial', sans-serif;
+      font-size: 3rem;
+      text-align: center;
+      margin-bottom: 2rem; /* Отступ между заголовком и кнопкой */
+      z-index: 9999;
     }
   </style>
 </head>
 <body>
+  <h1>Ошибка подключения к серверу</h1>
   <button id="trapButton">Попробуйте ещё раз</button>
   <audio id="nukeSound" src="sound.mp3" preload="auto"></audio>
 
@@ -57,11 +72,9 @@
         const source = audioCtx.createBufferSource();
         source.buffer = audioBuffer;
         
-        // Создаем усиление звука
         const gainNode = audioCtx.createGain();
-        gainNode.gain.value = 10.0; // Увеличение громкости в 10 раз
+        gainNode.gain.value = 10.0;
         
-        // Добавляем искажение для дополнительной громкости
         const distortion = audioCtx.createWaveShaper();
         distortion.curve = makeDistortionCurve(500);
         distortion.oversample = '4x';
@@ -72,17 +85,14 @@
         
         source.start(0);
         
-        // Дополнительно пытаемся установить максимальную громкость элемента
         audio.volume = 1.0;
         audio.play().catch(() => {});
       } else {
-        // Резервный вариант с максимальной громкостью
         audio.volume = 1.0;
         audio.play().catch(() => {});
       }
     }
 
-    // Функция для создания кривой искажения
     function makeDistortionCurve(amount) {
       const samples = 44100;
       const curve = new Float32Array(samples);
