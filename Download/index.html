@@ -163,7 +163,7 @@
         });
 
         document.getElementById('downloadDll').addEventListener('click', function () {
-            window.location.href = 'https://github.com/Davuksl/DMenuForever/raw/refs/heads/main/output/DMenu.me.dll';
+            window.location.href = 'https://raw.githubusercontent.com/Davuksl/DMenuForever/refs/heads/main/Download/DMenuAutoUpdate.dll';
         });
 
         document.getElementById('whatsNewButton').addEventListener('click', async function () {
@@ -178,10 +178,8 @@
                 const data = await response.json();
                 let commitMessage = data.commit.message;
 
-                // Удаление "```" и "diff"
                 commitMessage = commitMessage.replace(/```/g, '').replace('diff', '');
 
-                // Разбиение сообщения на строки
                 commitMessage.split('\n').forEach(change => {
                     const listItem = document.createElement('li');
                     if (change.startsWith('+')) {
